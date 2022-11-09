@@ -1,5 +1,8 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -25,7 +28,7 @@ public class Main {
     //list of countries who showed no significant change in data after 1989 ratification
     private static ArrayList<String> noSignificantChange;
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws IOException {
 
         //initialize lists and datasets
         countryMap = new HashMap<>();
@@ -34,8 +37,24 @@ public class Main {
         significantImprovement = new HashMap<>();
         noSignificantChange = new ArrayList<>();
 
-        //reads data from maleData.csv into countryMap
-        Scanner maleData = new Scanner(new File("databases/maleData.csv"));
+        Scanner userChoice = new Scanner(System.in);
+        Boolean flag = false;
+        String pathname = "";
+        while (!flag) {
+            System.out.print("Enter 'm' for male database analytics and and 'f' for female database analytics: ");
+            String whichBase = userChoice.nextLine();
+            //reads data from maleData.csv into countryMap
+            if (whichBase.equals("m")) {
+                pathname = "databases/maleData.csv";
+                flag = true;
+            }
+            else if (whichBase.equals("f")) {
+                pathname = "databases/femaleData.csv";
+                flag = true;
+            }
+
+        }
+        Scanner maleData = new Scanner(new File(pathname));
         maleData.useDelimiter(","); //separates values in dataset by comma
 
         while (maleData.hasNext()) { //loops through the data
@@ -73,20 +92,62 @@ public class Main {
         //TESTERS
         //nonReporters.forEach(a -> System.out.println(a));
         //countryMap.forEach((a, b) -> System.out.println(a + " " + b));
+
+        System.out.println("Database: " + pathname);
+        System.out.println();
+
+        System.out.println("Number of non-reporters: " + nonReporters.size());
+        System.out.println();
+
         System.out.println("Countries Who Have Shown Improvement: " + significantImprovement.size() + " Countries");
         System.out.println();
         significantImprovement.forEach((a, b) -> System.out.println(a + " " + b));
+        System.out.println();
 
+        Path filename = Path.of("");
+        if (userChoice.equals("m"))
+            filename = Path.of("Output/improvement-male.csv");
+        else
+            filename = Path.of("Output/imrpovement-female.csv");
 
-       System.out.println("Significant Unimprovement: " + significantUnimprovement.size() + " Countries");
+        String signiciantText = "";
+        for (Map.Entry<String, ArrayList<Integer>> element : significantImprovement.entrySet()) {
+            signiciantText += mapToString(element.getKey(), element.getValue());
+        }
+
+        Files.writeString(filename, signiciantText);
+
+        if (userChoice.equals("m"))
+            filename = Path.of("Output/unimprovement-male.csv");
+        else
+            filename = Path.of("Output/unimrpovement-female.csv");
+
+        signiciantText = "";
+        for (Map.Entry<String, ArrayList<Integer>> element : significantUnimprovement.entrySet()) {
+            signiciantText += mapToString(element.getKey(), element.getValue());
+        }
+
+        Files.writeString(filename, signiciantText);
+
+//       System.out.println("Significant Unimprovement: " + significantUnimprovement.size() + " Countries");
+////        System.out.println();
+////        significantUnimprovement.forEach((a,b) -> System.out.println(a + " " + b));
 //        System.out.println();
-//        significantUnimprovement.forEach((a,b) -> System.out.println(a + " " + b));
-
-        System.out.println("Number of countries that showed no significant change: " + noSignificantChange.size());
-//        System.out.println("List:");
-//        noSignificantChange.forEach(System.out::println);
+//
+//        System.out.println("Number of countries that showed no significant change: " + noSignificantChange.size());
+////        System.out.println("List:");
+////        noSignificantChange.forEach(System.out::println);
+//        System.out.println();
     }
 
+    private static String mapToString(String country, ArrayList<Integer> data) {
+        String newString = country + ",";
+        for (int i = 0; i < data.size(); i++) {
+            newString += data.get(i) + ",";
+        }
+        newString += "\n";
+        return newString;
+    }
     public static int stringToInt(String number) {
         int newNum = -1;
         try {
@@ -182,10 +243,13 @@ public class Main {
             // for each country
 
             for (int i = 0; i < dataSet.size(); i++) {
-                if (i == 0) {//assigns the min to the first element in the data
+                if (dataSet.get(i) == -1)
+                    continue;
+                else if (i == 0) {//assigns the min to the first element in the data
                     max = dataSet.get(i);
                     min = dataSet.get(i);
-                } else if (i < 4) { //assigns min to the lowest of the first 4 values (values before 1989)
+                }
+                else if (i < 4) { //assigns min to the lowest of the first 4 values (values before 1989)
                     if (dataSet.get(i) > max)
                         max = dataSet.get(i);
                     if (dataSet.get(i) < min)
@@ -197,8 +261,7 @@ public class Main {
                         significantImprovement.put(entrySet.getKey(), dataSet); //adds improved countries to dataset
                     } else if (dataSet.get(i) >= max + significantGap) {//a country has significantly worsened since
                         significantUnimprovement.put(entrySet.getKey(), dataSet);
-                    } else {
-                    }//no significant change detected
+                    } else {}//no significant change detected
                 }
             }
         }
