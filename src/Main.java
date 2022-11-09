@@ -40,9 +40,10 @@ public class Main {
         Scanner userChoice = new Scanner(System.in);
         Boolean flag = false;
         String pathname = "";
+        String whichBase = "";
         while (!flag) {
             System.out.print("Enter 'm' for male database analytics and and 'f' for female database analytics: ");
-            String whichBase = userChoice.nextLine();
+            whichBase = userChoice.nextLine();
             //reads data from maleData.csv into countryMap
             if (whichBase.equals("m")) {
                 pathname = "databases/maleData.csv";
@@ -100,12 +101,12 @@ public class Main {
         System.out.println();
 
         System.out.println("Countries Who Have Shown Improvement: " + significantImprovement.size() + " Countries");
-        System.out.println();
-        significantImprovement.forEach((a, b) -> System.out.println(a + " " + b));
+//        System.out.println();
+//        significantImprovement.forEach((a, b) -> System.out.println(a + " " + b));
         System.out.println();
 
         Path filename = Path.of("");
-        if (userChoice.equals("m"))
+        if (whichBase.equals("m"))
             filename = Path.of("Output/improvement-male.csv");
         else
             filename = Path.of("Output/imrpovement-female.csv");
@@ -117,7 +118,7 @@ public class Main {
 
         Files.writeString(filename, signiciantText);
 
-        if (userChoice.equals("m"))
+        if (whichBase.equals("m"))
             filename = Path.of("Output/unimprovement-male.csv");
         else
             filename = Path.of("Output/unimrpovement-female.csv");
@@ -129,12 +130,22 @@ public class Main {
 
         Files.writeString(filename, signiciantText);
 
-//       System.out.println("Significant Unimprovement: " + significantUnimprovement.size() + " Countries");
+       System.out.println("Significant Unimprovement: " + significantUnimprovement.size() + " Countries");
 ////        System.out.println();
 ////        significantUnimprovement.forEach((a,b) -> System.out.println(a + " " + b));
 //        System.out.println();
 //
-//        System.out.println("Number of countries that showed no significant change: " + noSignificantChange.size());
+
+        if (whichBase.equals("m"))
+            filename = Path.of("Output/noSignificantChange-male.txt");
+        else
+            filename = Path.of("Output/noSignificantChange-female.txt");
+
+        signiciantText = noSignificantChange.toString();
+
+        Files.writeString(filename, signiciantText);
+
+        System.out.println("Number of countries that showed no significant change: " + noSignificantChange.size());
 ////        System.out.println("List:");
 ////        noSignificantChange.forEach(System.out::println);
 //        System.out.println();
