@@ -35,11 +35,9 @@ Papua New Guinea,
 Denmark, 
 Italy, 
 Dominica,
-Malta,
-Spain
-
-
+Spain,
+Malta
 
 Caribbean small states,
 East Asia & Pacific,
-North America
+North America,
