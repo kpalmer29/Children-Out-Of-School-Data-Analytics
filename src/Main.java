@@ -37,10 +37,14 @@ public class Main {
         significantImprovement = new HashMap<>();
         noSignificantChange = new ArrayList<>();
 
+        //reads the dataset
         Scanner userChoice = new Scanner(System.in);
         Boolean flag = false;
         String pathname = "";
         String whichBase = "";
+
+        //allows the user to choose which dataset to analyze
+        //NOTE: currently this implementation only supports the male database
         while (!flag) {
             System.out.print("Enter 'm' for male database analytics and and 'f' for female database analytics: ");
             whichBase = userChoice.nextLine();
@@ -55,9 +59,11 @@ public class Main {
             }
 
         }
+
         Scanner maleData = new Scanner(new File(pathname));
         maleData.useDelimiter(","); //separates values in dataset by comma
 
+        //Reads the .cvs file into the local dataset (countryMap)
         while (maleData.hasNext()) { //loops through the data
             String country = "";
             ArrayList<Integer> tempList = new ArrayList<>();
@@ -94,6 +100,10 @@ public class Main {
         //nonReporters.forEach(a -> System.out.println(a));
         //countryMap.forEach((a, b) -> System.out.println(a + " " + b));
 
+
+        //OUTPUT
+        //the following print statements display the results to console - they can be commented out
+        //and do not affect the output files
         System.out.println("Database: " + pathname);
         System.out.println();
 
@@ -105,17 +115,19 @@ public class Main {
 //        significantImprovement.forEach((a, b) -> System.out.println(a + " " + b));
         System.out.println();
 
+        //OUTPUT FILES
+        //Creates the output (results) .csv files
         Path filename = Path.of("");
         if (whichBase.equals("m"))
             filename = Path.of("Output/improvement-male.csv");
         else
             filename = Path.of("Output/imrpovement-female.csv");
 
+        //Writes to significantImprovement output .csv
         String signiciantText = "";
         for (Map.Entry<String, ArrayList<Integer>> element : significantImprovement.entrySet()) {
             signiciantText += mapToString(element.getKey(), element.getValue());
         }
-
         Files.writeString(filename, signiciantText);
 
         if (whichBase.equals("m"))
@@ -123,11 +135,11 @@ public class Main {
         else
             filename = Path.of("Output/unimrpovement-female.csv");
 
+        //Writes to significant unimprovement output .csv
         signiciantText = "";
         for (Map.Entry<String, ArrayList<Integer>> element : significantUnimprovement.entrySet()) {
             signiciantText += mapToString(element.getKey(), element.getValue());
         }
-
         Files.writeString(filename, signiciantText);
 
        System.out.println("Significant Unimprovement: " + significantUnimprovement.size() + " Countries");
@@ -136,6 +148,7 @@ public class Main {
 //        System.out.println();
 //
 
+        //Creates output .txt list of countries that showed no significant change
         if (whichBase.equals("m"))
             filename = Path.of("Output/noSignificantChange-male.txt");
         else
@@ -151,6 +164,8 @@ public class Main {
 //        System.out.println();
     }
 
+    //This helper method converts a single line of the countryMap dataset into a String
+    //and returns that value
     private static String mapToString(String country, ArrayList<Integer> data) {
         String newString = country + ",";
         for (int i = 0; i < data.size(); i++) {
@@ -159,6 +174,8 @@ public class Main {
         newString += "\n";
         return newString;
     }
+
+    //This helper method converts numbers from String objects to Integer objects
     public static int stringToInt(String number) {
         int newNum = -1;
         try {
@@ -169,11 +186,14 @@ public class Main {
         return newNum;
     }
 
+    //Helper method which creates 5-year averages for the dataset and replaces
+    //the original data in countryMap with those averages
     public static void recordData() {
-        ArrayList<Integer> newList = new ArrayList<>();
         countryMap.forEach((a, b) -> countryMap.replace(a, b, newList(b)));
     }
 
+    //recordData() helper method which creates the 5-year averages for each individual country
+    //in this method, a single's countries data is passed as a param, and the new average list is returned
     private static ArrayList<Integer> newList(ArrayList<Integer> oldList) {
         ArrayList<Integer> newList = new ArrayList<>(); //create new return list
 
@@ -196,10 +216,11 @@ public class Main {
                             localCount++;
                         }
                     }
-                    double average = sum / localCount;
-                    newList.add((int) average);
+                    double average = sum / localCount; //calculate the average of this 5-year span
+                    newList.add((int) average); //adds the average to the new dataList
                 }
 
+                //reset fields for next 5-year period
                 count = 0;
                 templist.clear();
                 flag = false;
@@ -212,23 +233,26 @@ public class Main {
             count++;
         }
 
-        return newList;
+        return newList; //return resulting list
     }
 
+    //This helper method removes all countries who did not report sufficient data
+    //from country map and adds them to a new list: nonReporters
     private static void filterReporters() {
         for (Map.Entry<String, ArrayList<Integer>> entrySet : countryMap.entrySet()) {
-            if (checkFirstFour(entrySet.getValue())) {
-                nonReporters.add(entrySet.getKey());
+            if (checkFirstFour(entrySet.getValue())) { //calls helper method
+                nonReporters.add(entrySet.getKey()); //adds non-reporters to nonReporters list
             }
         }
 
-        for (String country : nonReporters) {
+        for (String country : nonReporters) { //removes all non-reporters from countryMap
             countryMap.remove(country);
         }
 
 
     }
 
+    //filterReporters() helper method, returns true if a country reported no data before 1989
     private static boolean checkFirstFour(ArrayList<Integer> list) {
         boolean flag = true;
         for (int i = 0; i < 4; i++) {
@@ -241,6 +265,8 @@ public class Main {
     }
 
 
+    //This method iterates through countryMap and determines if a country has shown significant change in their
+    //data since 1989. Countries are then sorted into one of three datasets accordingly.
     private static void findSignificantChange() {
         //iterates through every item in countryMap;
         for (Map.Entry<String, ArrayList<Integer>> entrySet : countryMap.entrySet()) {
